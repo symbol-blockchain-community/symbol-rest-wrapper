@@ -1,0 +1,457 @@
+openapi: 3.0.3
+info:
+  title: Symbol REST Wrapper
+  description: |-
+    API server that makes development more convenient
+  contact:
+    email: ym.u.ichiro@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+servers:
+  - description: default development
+    url: http://localhost:3000
+  - description: v1 development
+    url: http://localhost:3000/v1
+tags:
+  - name: root
+  - name: account
+  - name: convert
+  - name: node
+  - name: qrcode
+paths:
+  /:
+    get:
+      tags:
+        - root
+      summary: get api status
+      operationId: getApiStatus
+      security: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: GetApiStatus200Response
+                required:
+                  - status
+                  - name
+                  - networkType
+                properties:
+                  status:
+                    type: string
+                  name:
+                    type: string
+                  networkType:
+                    $ref: "#/components/schemas/NetworkType"
+  /accounts/{accountId}:
+    get:
+      tags:
+        - account
+      summary: get account info
+      operationId: getAccount
+      security: []
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: GetAccount200Response
+                required:
+                  - account
+                properties:
+                  account:
+                    $ref: "#/components/schemas/Account"
+  /accounts:
+    post:
+      tags:
+        - account
+      summary: create a new private key
+      operationId: postAccount
+      security: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: PostAccount200Response
+                required:
+                  - account
+                properties:
+                  account:
+                    $ref: "#/components/schemas/CreatedAccount"
+  /nodes:
+    get:
+      tags:
+        - node
+      summary: get living node
+      operationId: getNodes
+      security: []
+      parameters:
+        - in: query
+          name: networkType
+          description: default value is mainnet
+          schema:
+            $ref: "#/components/schemas/NetworkType"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: GetNodes200Response
+                required:
+                  - nodes
+                properties:
+                  nodes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Node"
+  /convert/address/public-key:
+    post:
+      tags:
+        - convert
+      summary: public-key to plain address
+      operationId: postConvertPublicKeyToPlainAddress
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PostConvertPublicKeyToPlainAddressRequest
+              required:
+                - from
+              properties:
+                from:
+                  $ref: "#/components/schemas/PublicKey"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: PostConvertPublicKeyToPlainAddress200Response
+                required:
+                  - result
+                properties:
+                  result:
+                    $ref: "#/components/schemas/Address"
+  /convert/address/unresolved-address:
+    post:
+      tags:
+        - convert
+      summary: unresolved address to plain address
+      operationId: postConvertUnresolvedAddressToPlainAddress
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PostConvertUnresolvedAddressToPlainAddressRequest
+              required:
+                - from
+              properties:
+                from:
+                  $ref: "#/components/schemas/UnresolvedAddress"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: PostConvertUnresolvedAddressToPlainAddress200Response
+                required:
+                  - result
+                properties:
+                  result:
+                    $ref: "#/components/schemas/Address"
+  /convert/transaction/payload:
+    post:
+      tags:
+        - convert
+      summary: transaction payload to json transaction object
+      operationId: postConvertPayloadToTransaction
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PostConvertPayloadToTransactionRequest
+              required:
+                - from
+              properties:
+                from:
+                  $ref: "#/components/schemas/Payload"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                title: PostConvertPayloadToTransaction200Response
+                required:
+                  - result
+                properties:
+                  result:
+                    $ref: "#/components/schemas/Transaction"
+  /qrcode/address/{address}:
+    get:
+      tags:
+        - qrcode
+      summary: Get QR Code for Address
+      operationId: getQrCodeForAddress
+      security: []
+      parameters:
+        - in: path
+          name: address
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: name
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Successful response
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+components:
+  schemas:
+    Account:
+      type: object
+      description: mosaic 数量等を変換したアカウントオブジェクト
+      required:
+        - version
+        - address
+        - addressHeight
+        - publicKey
+        - publicKeyHeight
+        - accountType
+        - supplementalPublicKeys
+        - activityBuckets
+        - mosaics
+        - importance
+        - importanceHeight
+      properties:
+        version:
+          type: number
+        address:
+          type: string
+        addressHeight:
+          type: number
+        publicKey:
+          type: string
+        publicKeyHeight:
+          type: number
+        accountType:
+          type: number
+        supplementalPublicKeys:
+          type: object
+          properties:
+            linked:
+              type: object
+              required:
+                - publicKey
+              properties:
+                publicKey:
+                  type: string
+            node:
+              type: object
+              required:
+                - publicKey
+              properties:
+                publicKey:
+                  type: string
+            vrf:
+              type: object
+              required:
+                - publicKey
+              properties:
+                publicKey:
+                  type: string
+            voting:
+              type: object
+              required:
+                - publicKeys
+              properties:
+                publicKeys:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - publicKey
+                      - startEpoch
+                      - endEpoch
+                    properties:
+                      publicKey:
+                        type: string
+                      startEpoch:
+                        type: number
+                      endEpoc:
+                        type: number
+        activityBuckets:
+          type: array
+          items:
+            type: object
+            required:
+              - startHeight
+              - totalFeesPaid
+              - beneficiaryCount
+              - rawScore
+            properties:
+              startHeight:
+                type: string
+              totalFeesPaid:
+                type: string
+              beneficiaryCount:
+                type: number
+              rawScore:
+                type: string
+        mosaics:
+          type: array
+          items:
+            $ref: "#/components/schemas/Mosaic"
+        importance:
+          type: number
+        importanceHeight:
+          type: number
+    CreatedAccount:
+      type: object
+      description: when create a acount object
+      required:
+        - address
+        - publicKey
+        - privateKey
+      properties:
+        address:
+          type: string
+        publicKey:
+          type: string
+        privateKey:
+          type: string
+    Transaction:
+      type: object
+      required:
+        - signature
+        - signerPublicKey
+        - version
+        - network
+        - type
+        - maxFee
+        - deadline
+      properties:
+        signature:
+          type: string
+        signerPublicKey:
+          type: string
+        version:
+          type: number
+        network:
+          type: number
+        type:
+          type: number
+        maxFee:
+          type: number
+        deadline:
+          type: number
+        message:
+          type: string
+        mosaics:
+          type: array
+          items:
+            type: object
+    Address:
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          type: string
+    UnresolvedAddress:
+      type: object
+      required:
+        - unresolvedAddress
+      properties:
+        unresolvedAddress:
+          type: string
+    PublicKey:
+      type: object
+      required:
+        - publicKey
+      properties:
+        publicKey:
+          type: string
+    Payload:
+      type: object
+      description: transaction payload
+      required:
+        - payload
+      properties:
+        payload:
+          type: string
+    Node:
+      type: object
+      description: transaction payload
+      required:
+        - domain
+        - port
+        - isSsl
+        - networkType
+      properties:
+        domain:
+          type: string
+        port:
+          type: number
+        isSsl:
+          type: boolean
+        networkType:
+          $ref: "#/components/schemas/NetworkType"
+    NetworkType:
+      type: string
+      enum:
+        - testnet
+        - mainnet
+    Mosaic:
+      type: object
+      required:
+        - id
+        - amount
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        divisibility:
+          type: number
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer

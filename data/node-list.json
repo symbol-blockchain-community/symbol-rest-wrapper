@@ -1,0 +1,10 @@
+[
+  {
+    "domain": "https://symbolnode.blockchain-authn.app",
+    "port": 3001,
+    "isSsl": true,
+    "networkType": "mainnet",
+    "enable": true,
+    "profile": "https://twitter.com/faunsu19000"
+  }
+]
